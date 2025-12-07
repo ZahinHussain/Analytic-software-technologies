@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from treegraph import topTree,midTree,bottomTree
 
 df = pd.read_csv("nss2025.csv")
 
@@ -86,43 +87,38 @@ with tab1:
     # ========= CAH2 to 3  =========
     st.subheader("Population by CAH2 with CAH3 filter")
 
-# --- Dropdown for CAH2 ---
-cah2_options = sorted(df["cah2_subject"].dropna().unique())
-cah2_filter = st.selectbox("Filter CAH2", ["All"] + cah2_options)
+        # --- Dropdown for CAH2 ---
+    cah2_options = sorted(df["cah2_subject"].dropna().unique())
+    cah2_filter = st.selectbox("Filter CAH2", ["All"] + cah2_options, key="cah2_filter")
 
-# Apply CAH2 filter
-if cah2_filter != "All":
-    df2 = df[df["cah2_subject"] == cah2_filter]
-else:
-    df2 = df.copy()
+    # --- Filter dataframe based on CAH2 selection ---
+    if cah2_filter != "All":
+        df_filtered = df[df["cah2_subject"] == cah2_filter]
+    else:
+        df_filtered = df.copy()
 
-# --- Dropdown for CAH3 within filtered CAH2 ---
-cah3_options = sorted(df2["cah3_subject"].dropna().unique())
-cah3_filter = st.selectbox("Filter CAH3", ["All"] + cah3_options)
+   
 
-if cah3_filter != "All":
-    df3 = df2[df2["cah3_subject"] == cah3_filter]
-else:
-    df3 = df2.copy()
 
-# --- Print grouped CAH3 subjects ---
-cha3 = df2.groupby("cah3_subject")
-for subject_name, group_df in cha3:
-    st.write(subject_name)
 
-# --- Population chart ---
-cah3_pop = df3.groupby("cah3_subject")["population"].sum().sort_values()
+    # --- Group by CAH3 and calculate population sums ---
+    cah3_pop = df_filtered.groupby("cah3_subject")["population"].sum().sort_values()
 
-fig, ax = plt.subplots(figsize=(10, max(4, len(cah3_pop) * 0.4)))
-ax.barh(cah3_pop.index, cah3_pop.values, color="skyblue")
-ax.set_xlabel("Population")
-ax.set_ylabel("CAH3 Subject")
-plt.tight_layout()
-
-st.pyplot(fig)
+    # --- Plot ---
+    fig3, ax3 = plt.subplots(figsize=(10, max(4, len(cah3_pop) * 0.4)))
+    ax3.barh(cah3_pop.index, cah3_pop.values, color="blue")
+    ax3.set_xlabel("Population")
+    ax3.set_ylabel("CAH3 Subject")
+    ax3.set_title(f"Population for CAH2: {cah2_filter}")
+    plt.tight_layout()
+    st.pyplot(fig3)
 
 with tab2:
     st.header("done")
+
+    topTree()
+    midTree()
+    bottomTree()
 
 
 with tab3:
