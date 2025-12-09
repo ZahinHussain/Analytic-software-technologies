@@ -163,5 +163,98 @@ def lastTree():
     
     fig.show()
 
-midTree()
 
+
+
+def totalTree():
+
+    clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
+
+    total_pop = df['population'].sum()
+
+    fig = px.treemap(
+        clean_df, 
+        path=[px.Constant(f"Last 25 Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject'], 
+        values='population',                   
+        color='cah2_subject',
+        
+        # Keep the "Pop" colors you liked
+        color_discrete_sequence=px.colors.qualitative.Bold,
+        hover_data={'population': ':,'}
+    )
+
+    # Styling: Thin borders, Tight margins, Readable text
+    fig.update_traces(
+        root_color="lightgrey",
+        textinfo="label+value+percent parent",
+        textfont=dict(size=15, family="Arial Black"),
+        marker=dict(line=dict(color='#FFFFFF', width=0.5))
+    )
+
+    fig.update_layout(
+        margin=dict(t=30, l=0, r=0, b=0),
+        uniformtext=dict(minsize=10, mode='hide')
+    )
+    
+    fig.show()
+
+
+
+
+
+totalTree()
+
+def topHalf():
+
+
+
+    clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
+
+    total_pop = df['population'].sum()
+
+
+    halfPop = total_pop/2
+
+    fig = px.treemap(
+        clean_df, 
+        path=[px.Constant(f"Last 25 Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject'], 
+        values='population',                   
+        color='cah2_subject',
+        
+        # Keep the "Pop" colors you liked
+        color_discrete_sequence=px.colors.qualitative.Bold,
+        hover_data={'population': ':,'}
+    )
+
+    # Styling: Thin borders, Tight margins, Readable text
+    fig.update_traces(
+        root_color="lightgrey",
+        textinfo="label+value+percent parent",
+        textfont=dict(size=15, family="Arial Black"),
+        marker=dict(line=dict(color='#FFFFFF', width=0.5))
+    )
+
+    fig.update_layout(
+        margin=dict(t=30, l=0, r=0, b=0),
+        uniformtext=dict(minsize=10, mode='hide')
+    )
+    
+    fig.show()
+
+
+def ReturnHalf():
+    
+    reached50 = False
+
+
+    topSubjects = []
+
+
+
+    totalCha1 = df["cah1_subject"].unique()
+
+    sortedV = totalCha1.sort_values('population', ascending=True)
+    
+    print(sortedV)
+        
+        
