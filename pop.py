@@ -16,7 +16,7 @@ def load_data(path="nss2025.csv"):
 # -----------------------------------------
 def process_subject_counts(df):
     subject_counts = (
-        df.groupby(['cah2_subject'])
+        df.groupby(['cah2_subject','cah3_subject'])
 ['population']
         .sum()
         .reset_index()
@@ -99,7 +99,7 @@ fig.show()
 '''
 
 
-
+'''
 df = load_data()
 
 subject_counts = process_subject_counts(df)
@@ -119,6 +119,51 @@ print(subject_counts)
 fig = px.treemap(
         subject_counts, 
         path=[px.Constant(f"Last 25 Subjects ({total_pop_target:,})"), 'cah2_subject'], 
+        values='population',                   
+        color='cah2_subject',
+        
+        # Keep the "Pop" colors you liked
+        color_discrete_sequence=px.colors.qualitative.Bold,
+        hover_data={'population': ':,'}
+    )
+
+# Styling: Thin borders, Tight margins, Readable text
+fig.update_traces(
+    root_color="lightgrey",
+    textinfo="label+value+percent parent",
+    textfont=dict(size=15, family="Arial Black"),
+    marker=dict(line=dict(color='#FFFFFF', width=0.5))
+)
+
+fig.update_layout(
+    margin=dict(t=30, l=0, r=0, b=0),
+    uniformtext=dict(minsize=10, mode='hide')
+)
+
+fig.show()
+'''
+
+
+
+df = load_data()
+
+subject_counts = process_subject_counts(df)
+
+total_pop_target = df['population'].sum() *0.5
+
+print("Initial rows:", len(subject_counts))
+
+
+
+# Now trim until <= target
+subject_counts = trim_until_target(subject_counts, total_pop_target)
+
+print("Final rows:", len(subject_counts))
+print(subject_counts)
+
+fig = px.treemap(
+        subject_counts, 
+        path=[px.Constant(f"Last 25 Subjects ({total_pop_target:,})"), 'cah2_subject','cah3_subject'], 
         values='population',                   
         color='cah2_subject',
         
