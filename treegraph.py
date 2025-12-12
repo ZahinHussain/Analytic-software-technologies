@@ -242,19 +242,51 @@ def topHalf():
     fig.show()
 
 
-def ReturnHalf():
+
+def onluUni():
+    df = pd.read_csv("onlyUni.csv")
+
+    # 1. Clean the data
+    clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject', 'provider'])
+
+    # 2. REMOVE DUPLICATES to calculate accurate Total Population
+    #    We create a temporary dataframe 'unique_courses' 
+    #    We assume a unique course is a specific Subject at a specific Provider
+    unique_courses = clean_df.drop_duplicates(subset=['cah3_subject', 'provider'])
+
+    # 3. Calculate total of just the unique courses
+    total_pop = unique_courses['population'].sum()
     
-    reached50 = False
+    print(f"Total Unique Population: {total_pop:,}")
 
+    # 4. Create the Chart
+    #    Note: Depending on your data, you might want to use 'unique_courses' 
+    #    in the treemap too if the duplicates were causing visual errors.
+    #    If you want the chart to use the deduped data, change 'clean_df' to 'unique_courses' below:
+    fig = px.treemap(
+        unique_courses, 
+        path=[px.Constant(f"All Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject', 'provider'], 
+        values='population',                   
+        color='cah2_subject',
+        
+        color_discrete_sequence=px.colors.qualitative.Bold,
+        hover_data={'population': ':,'}
+    )
 
-    topSubjects = []
+    # Styling
+    fig.update_traces(
+        root_color="lightgrey",
+        textinfo="label+value+percent parent",
+        textfont=dict(size=15, family="Arial Black"),
+        marker=dict(line=dict(color='#FFFFFF', width=0.5))
+    )
 
-
-
-    totalCha1 = df["cah1_subject"].unique()
-
-    sortedV = totalCha1.sort_values('population', ascending=True)
+    fig.update_layout(
+        margin=dict(t=30, l=0, r=0, b=0),
+        uniformtext=dict(minsize=10, mode='hide')
+    )
     
-    print(sortedV)
-        
-        
+    fig.show()
+
+# Run the function
+onluUni()
