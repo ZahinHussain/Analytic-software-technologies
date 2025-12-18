@@ -117,7 +117,11 @@ def midTree():
 
 def lastTree():
     # 1. Clean the data FIRST
+    
     clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
+
+
+    clean_df = clean_df.drop_duplicates(subset=['cah3_subject', 'provider'])
 
     # 2. Find the Top 10 CAH2 Subjects by Total Population
     #    (We sum them up to find out who is biggest)
@@ -170,7 +174,10 @@ def totalTree():
 
     clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
 
-    total_pop = df['population'].sum()
+
+    clean_df = clean_df.drop_duplicates(subset=['cah3_subject', 'provider'])
+
+    total_pop = clean_df['population'].sum()
 
     fig = px.treemap(
         clean_df, 
@@ -210,6 +217,9 @@ def topHalf():
 
     clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
 
+
+    clean_df = clean_df.drop_duplicates(subset=['cah3_subject', 'provider'])
+
     total_pop = df['population'].sum()
 
 
@@ -244,7 +254,7 @@ def topHalf():
 
 
 def onluUni():
-    df = pd.read_csv("onlyUni.csv")
+    df = pd.read_csv("nss2025.csv")
 
     # 1. Clean the data
     clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject', 'provider'])
@@ -289,4 +299,10 @@ def onluUni():
     fig.show()
 
 # Run the function
+
+
+#
+# totalTree()
+
+
 onluUni()
