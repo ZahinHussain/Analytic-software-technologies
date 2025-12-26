@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from treegraph import topTree,midTree,bottomTree
+
 
 df = pd.read_csv("nss2025.csv")
 
@@ -114,11 +114,68 @@ with tab1:
     st.pyplot(fig3)
 
 with tab2:
-    st.header("done")
+    import streamlit as st
+    import matplotlib.pyplot as plt
 
-    topTree()
-    midTree()
-    bottomTree()
+    st.subheader("Population by CAH2 with CAH3 filter")
+
+    # --- Dropdown for CAH3 ---
+    cah3_options = sorted(df["cah1_subject"].dropna().unique())
+    cah3_filter = st.selectbox(
+        "Filter CAH1",
+        ["All"] + cah3_options,
+        key="cah3_filter"
+    )
+
+    # --- Filter dataframe ---
+    if cah3_filter != "All":
+        df_filtered = df[df["cah1_subject"] == cah3_filter]
+    else:
+        df_filtered = df.copy()
+
+    # --- Aggregate data ---
+    top_10 = (
+        df_filtered
+        .groupby("question", as_index=False)
+        .agg(mean_agree_pct=("agree_pct", "mean"))
+        .sort_values("mean_agree_pct", ascending=True)
+    )
+
+    # --- Prepare plotting lists ---
+    questionToPlot = []
+    answerValues = []
+
+    for _, row in top_10.iterrows():
+        questionToPlot.append(row["question"])
+        answerValues.append(row["mean_agree_pct"])
+
+    # --- Plot ---
+    fig, ax = plt.subplots(figsize=(12, 10))
+
+    ax.barh(questionToPlot, answerValues)
+    ax.set_xlabel("Percentage")
+    ax.set_title("Results by Question")
+    ax.grid(axis="x", linestyle="--", alpha=0.7)
+    ax.invert_yaxis()
+
+    plt.tight_layout()
+
+    # --- Streamlit render ---
+    st.pyplot(fig)
+
+
+
+
+    # -----------------------------
+
+    # --- THE PLOTTING CODE (FIXED) ---
+
+
+
+
+    
+
+
 
 
 with tab3:

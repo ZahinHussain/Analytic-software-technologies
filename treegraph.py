@@ -4,43 +4,51 @@ import plotly.express as px
 # --- Load CSV ---
 df = pd.read_csv("nss2025.csv")
 
+import plotly.express as px
+
+import pandas as pd
+import plotly.express as px
+
 def topTree():
+    # Load the data
+    df = pd.read_csv("onlyUni.csv")
 
-    val =5
+    val =4
 
-    # 1. Clean the data FIRST
+    # 1. Clean the data FIRST by removing rows with NaN values in important columns
     clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
 
-    # 2. Find the Top 10 CAH2 Subjects by Total Population
-    #    (We sum them up to find out who is biggest)
+    # 2. Drop duplicates based on 'cah3_subject' and 'provider'
+    clean_df = clean_df.drop_duplicates(subset=['cah3_subject', 'provider'])
+
+    # 3. Find the Total Population for each 'cah2_subject'
     cah2_totals = clean_df.groupby('cah2_subject')['population'].sum()
-    
-    #    Get the NAMES of the top 10
-    top_10_names = cah2_totals.sort_values(ascending=False).head(val).index
-    
+
+    # 4. Get the Top 10 CAH2 Subjects by Total Population
+    top_10_names = cah2_totals.sort_values(ascending=False).iloc[20:].index
+
     print("Top 10 Subjects selected:")
     print(top_10_names)
 
-    # 3. Filter the ORIGINAL dataframe to keep only those 10 subjects
-    #    (This keeps the CAH3 data alive)
+    # 5. Filter the ORIGINAL cleaned dataframe to only include these top 10 subjects
     df_top10 = clean_df[clean_df['cah2_subject'].isin(top_10_names)]
 
-    # 4. Calculate total of just these 10
+    # 6. Calculate the total population of these top 10 subjects
     total_pop = df_top10['population'].sum()
 
-    # 5. Create the Chart
+    # 7. Create the Treemap Chart
     fig = px.treemap(
         df_top10, 
-        path=[px.Constant(f"Top {val} Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject'], 
+        path=[px.Constant(f"Top {val} FEHE Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject'], 
         values='population',                   
         color='cah2_subject',
         
-        # Keep the "Pop" colors you liked
+        # Color options for the subjects
         color_discrete_sequence=px.colors.qualitative.Bold,
         hover_data={'population': ':,'}
     )
 
-    # Styling: Thin borders, Tight margins, Readable text
+    # Styling: Thin borders, tight margins, readable text
     fig.update_traces(
         root_color="lightgrey",
         textinfo="label+value+percent parent",
@@ -52,10 +60,9 @@ def topTree():
         margin=dict(t=30, l=0, r=0, b=0),
         uniformtext=dict(minsize=10, mode='hide')
     )
-    
+
+    # Show the chart
     fig.show()
-
-
 
 
 
@@ -169,28 +176,35 @@ def lastTree():
 
 
 
-
 def totalTree():
+    df = pd.read_csv("FEHE.csv")
 
-    clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
+    # Collapse the 27 questions FIRST
+    base_df = (
+        df
+        .groupby(
+            ['provider', 'cah1_subject', 'cah2_subject', 'cah3_subject'],
+            as_index=False
+        )
+        .agg(population=('population', 'first'))
+    )
 
-
-    clean_df = clean_df.drop_duplicates(subset=['cah3_subject', 'provider'])
-
-    total_pop = clean_df['population'].sum()
+    total_pop = base_df['population'].sum()
 
     fig = px.treemap(
-        clean_df, 
-        path=[px.Constant(f"Last 25 Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject'], 
-        values='population',                   
-        color='cah2_subject',
-        
-        # Keep the "Pop" colors you liked
+        base_df,
+        path=[
+            px.Constant(f"All Subjects Student Populations ({total_pop:,})"),
+            'cah2_subject',
+            'cah3_subject',
+       
+        ],
+        values='population',
+        color='cah1_subject',
         color_discrete_sequence=px.colors.qualitative.Bold,
         hover_data={'population': ':,'}
     )
 
-    # Styling: Thin borders, Tight margins, Readable text
     fig.update_traces(
         root_color="lightgrey",
         textinfo="label+value+percent parent",
@@ -202,14 +216,12 @@ def totalTree():
         margin=dict(t=30, l=0, r=0, b=0),
         uniformtext=dict(minsize=10, mode='hide')
     )
-    
+
     fig.show()
 
 
 
 
-
-totalTree()
 
 def topHalf():
 
@@ -302,7 +314,13 @@ def onluUni():
 
 
 #
-# totalTree()
+
+topTree()
 
 
-onluUni()
+
+#totalTree()
+
+
+
+
