@@ -11,9 +11,9 @@ import plotly.express as px
 
 def topTree():
     # Load the data
-    df = pd.read_csv("onlyUni.csv")
+    df = pd.read_csv("FEHE.csv")
 
-    val =4
+   
 
     # 1. Clean the data FIRST by removing rows with NaN values in important columns
     clean_df = df.dropna(subset=['cah2_subject', 'cah3_subject'])
@@ -25,9 +25,9 @@ def topTree():
     cah2_totals = clean_df.groupby('cah2_subject')['population'].sum()
 
     # 4. Get the Top 10 CAH2 Subjects by Total Population
-    top_10_names = cah2_totals.sort_values(ascending=False).iloc[20:].index
+    top_10_names = cah2_totals.sort_values(ascending=False)
 
-    print("Top 10 Subjects selected:")
+    print("Next 10 Subjects selected:")
     print(top_10_names)
 
     # 5. Filter the ORIGINAL cleaned dataframe to only include these top 10 subjects
@@ -39,7 +39,7 @@ def topTree():
     # 7. Create the Treemap Chart
     fig = px.treemap(
         df_top10, 
-        path=[px.Constant(f"Top {val} FEHE Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject'], 
+        path=[px.Constant(f"Rest of FEHE Subjects ({total_pop:,})"), 'cah2_subject', 'cah3_subject'], 
         values='population',                   
         color='cah2_subject',
         
@@ -57,6 +57,7 @@ def topTree():
     )
 
     fig.update_layout(
+   
         margin=dict(t=30, l=0, r=0, b=0),
         uniformtext=dict(minsize=10, mode='hide')
     )
@@ -177,11 +178,13 @@ def lastTree():
 
 
 def totalTree():
-    df = pd.read_csv("FEHE.csv")
+    df = pd.read_csv("onlyUni.csv")
+
+    df_filtered = df[df["provider"] == "University of Southampton"]
 
     # Collapse the 27 questions FIRST
     base_df = (
-        df
+        df_filtered
         .groupby(
             ['provider', 'cah1_subject', 'cah2_subject', 'cah3_subject'],
             as_index=False
@@ -195,8 +198,8 @@ def totalTree():
         base_df,
         path=[
             px.Constant(f"All Subjects Student Populations ({total_pop:,})"),
-            'cah2_subject',
-            'cah3_subject',
+            'cah1_subject',
+
        
         ],
         values='population',
@@ -213,9 +216,11 @@ def totalTree():
     )
 
     fig.update_layout(
-        margin=dict(t=30, l=0, r=0, b=0),
-        uniformtext=dict(minsize=10, mode='hide')
+
+        margin=dict(t=40, l=20, r=20, b=20),
+        uniformtext=dict(minsize=11, mode='hide')
     )
+
 
     fig.show()
 
@@ -313,14 +318,56 @@ def onluUni():
 # Run the function
 
 
-#
+def providerTree():
+    df = pd.read_csv("nss2025.csv")
 
-topTree()
+    # 1. Clean data
+    clean_df = df.dropna(subset=['cah1_subject', 'provider'])
 
-
-
-#totalTree()
-
-
+    # 2. GROUP BY provider + subjects
 
 
+    clean_df = clean_df.drop_duplicates(subset=['cah1_subject','cah2_subject','cah3_subject', 'provider'])    
+    grouped = (
+        clean_df
+        .groupby(['cah1_subject','provider'], as_index=False)
+        .agg(population=('population', 'sum'))
+    )
+
+    # 3. Correct total population (already unique after grouping)
+    total_pop = grouped['population'].sum()
+
+    # 4. Treemap
+    fig = px.treemap(
+        grouped,
+        path=[
+            px.Constant(f"All providers ({total_pop:,})"),
+           
+            'cah1_subject',
+             'provider',
+            
+        ],
+        values='population',
+        color='cah1_subject',
+        color_discrete_sequence=px.colors.qualitative.Bold,
+        hover_data={'population': ':,'}
+    )
+
+    # 5. Styling
+    fig.update_traces(
+        root_color="lightgrey",
+        textinfo="label+value+percent parent",
+        textfont=dict(size=15, family="Arial Black"),
+        marker=dict(line=dict(color='#FFFFFF', width=0.5))
+    )
+
+    fig.update_layout(
+        margin=dict(t=30, l=0, r=0, b=0),
+        uniformtext=dict(minsize=10, mode='hide')
+    )
+
+    fig.show()
+
+totalTree()
+
+providerTree()
